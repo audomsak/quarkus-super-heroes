@@ -1,0 +1,63 @@
+schemaVersion: 2.1.0
+metadata:
+  name: quarkus-super-heros
+  version: 1.2.0
+  displayName: Quarkus Super Heros
+  description: Dev Spaces for Quarkus Super Heros
+  tags:
+    - Java
+    - Maven
+  projectType: Maven
+  language: Java
+  icon: https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg
+starterProjects:
+  - name: quarkus-super-heros
+    git:
+      remotes:
+        origin: 'https://github.com/audomsak/quarkus-super-heroes.git'
+components:
+  - name: tools
+    container:
+      image: registry.access.redhat.com/ubi8/openjdk-17:latest
+      command: ["tail", "-f", "/dev/null"]
+      memoryLimit: 2Gi
+      mountSources: true
+      endpoints:
+        - name: http-maven
+          targetPort: 8080
+        - exposure: none
+          name: debug
+          targetPort: 5858
+      volumeMounts:
+        - name: m2
+          path: /home/user/.m2
+      env:
+        - name: DEBUG_PORT
+          value: '5858'
+  - name: m2
+    volume: {}
+commands:
+  - id: mvn-package
+    exec:
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository package'
+      group:
+        kind: build
+        isDefault: true
+  - id: run
+    exec:
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: 'java -jar target/*.jar'
+      group:
+        kind: run
+        isDefault: true
+  - id: debug
+    exec:
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: 'java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=${DEBUG_PORT},suspend=n -jar target/*.jar'
+      group:
+        kind: debug
+        isDefault: true
