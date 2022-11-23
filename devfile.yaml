@@ -23,7 +23,7 @@ components:
       memoryLimit: 2Gi
       mountSources: true
       endpoints:
-        - name: http-maven
+        - name: http-quarkus
           targetPort: 8080
         - exposure: none
           name: debug
@@ -35,13 +35,22 @@ components:
         - name: DEBUG_PORT
           value: '5858'
   - name: m2
-    volume: {}
+    volume:
+      size: 3Gi
 commands:
   - id: mvn-clean
     exec:
       component: tools
       workingDir: ${PROJECT_SOURCE}
       commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository -s maven-setting.xml clean'
+      group:
+        kind: build
+        isDefault: true
+  - id: mvn-compile
+    exec:
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository -s maven-setting.xml compile'
       group:
         kind: build
         isDefault: true
@@ -61,19 +70,21 @@ commands:
       group:
         kind: build
         isDefault: true
-  - id: run
+  - id: dev-run
     exec:
       component: tools
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: 'java -jar target/*.jar'
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository -s maven-setting.xml quarkus:dev -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager'
+      hotReloadCapable: true
       group:
         kind: run
         isDefault: true
-  - id: debug
+      workingDir: ${PROJECT_SOURCE}
+  - id: dev-debug
     exec:
       component: tools
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: 'java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=${DEBUG_PORT},suspend=n -jar target/*.jar'
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository -s maven-setting.xml quarkus:dev -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Ddebug=${DEBUG_PORT}'
+      hotReloadCapable: true
       group:
         kind: debug
         isDefault: true
+      workingDir: ${PROJECT_SOURCE}
