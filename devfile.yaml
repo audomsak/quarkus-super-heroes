@@ -37,11 +37,27 @@ components:
   - name: m2
     volume: {}
 commands:
+  - id: mvn-clean
+    exec:
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository -s maven-setting.xml clean'
+      group:
+        kind: build
+        isDefault: true
+  - id: mvn-install
+    exec:
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository -s maven-setting.xml install'
+      group:
+        kind: build
+        isDefault: true
   - id: mvn-package
     exec:
       component: tools
       workingDir: ${PROJECT_SOURCE}
-      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository package'
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository -s maven-setting.xml package'
       group:
         kind: build
         isDefault: true
